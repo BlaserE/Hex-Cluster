@@ -1,6 +1,6 @@
-\documentclass[12pt]{article}
+\documentclass[12pt]{report}
 \usepackage[margin=2.5cm]{geometry}
-\usepackage{natbib}
+
 \usepackage[T1]{fontenc}	
 \usepackage[english]{babel}
 
@@ -8,19 +8,34 @@
 % \usepackage{minted}
 
 %\title{Home Server Provisioning}
-\author{Eloi Blaser}
+\author{Fort-Sovereign}
 %\date{March 2026}
 
+%\usepackage{natbib}
+%\bibliographystyle{unsrtnat}
 
-\newcommand{\manualname}{Home Server Manual}
-\newcommand{\authorname}{Eloi Blaser}
+% For bibliography
+\usepackage[style=numeric, backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+% For glossary
+\usepackage[toc]{glossaries}
+\makeglossaries
+
+\newglossaryentry{zfs}
+{
+	name=ZFS,
+	description={A high-performance file system and logical volume manager designed for data integrity and massive storage}
+}
+
+
+\input{glossary.tex}
 
 %Autres packages et commandes utiles
 %----------------------------------------------------------------
 \usepackage{amsmath,amsthm,amssymb,amsfonts}	% Pour pouvoir inclure certains symboles et environnements mathématiques
 \usepackage{enumerate} % Pour mieux gérer la commande enumerate dans les sections
 \usepackage{graphicx}	% Pour inclure des images
-\usepackage{svg}
 \usepackage{color}	% Pour inclure du texte en couleur
 \usepackage{units}	% Pour pouvoir tapper les unités correctement
 \usepackage{pgf,tikz}	% Utilisation du module tikz, qui permet de tracer des belles images
@@ -39,7 +54,13 @@
 
 \newpage
 
+% tabe of contents
 \tableofcontents
+
+\newpage
+
+% glossary
+
 
 \newpage
 
@@ -52,5 +73,11 @@
 \newpage
 
 \input{sections/section3}
+\newpage
+\printglossary[title=Special Terms, toctitle=List of terms]
+\newpage
+
+% bibliography
+\printbibliography[heading=bibintoc]
 
 \end{document}

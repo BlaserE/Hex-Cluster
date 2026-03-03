@@ -13,6 +13,14 @@
 *.xml
 *.fdb_latexmk
 *.fls
+*.acn
+*.glg
+*.glg-abr
+*.glo-abr
+*.gls
+*.gls-abr
+
+
 
 # --- Formatting & Indexing ---
 *.clo

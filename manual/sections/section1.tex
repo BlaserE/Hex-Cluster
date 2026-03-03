@@ -1,3 +1,17 @@
+\section{Philosphy}
+This user manual is part of a bigger project called Fort-Sovereign (edgy name, I know...).
+The intent of this manual is to make anyone, whoever it is, capable of creating a server in their own home.
+The objective is to allow even more people to get away from corporations that favor shareholders rather than their clients.
+So, the responsibility falls to us, to show them that they are not the only option. 
+
+The goal is that, by the end of this manual, you will be able to create and deploy your very own server. 
+You will learn all the surface-level knowledge required to do so. \\
+
+
+\subsection{License}
+Both this user manual as well as the project repository is licensed under the \textbf{GPLv3} distribution.
+Anyone is free to take, change and redistribute both this manual and the repository content under the same license \textit{only}.
+
 \section{Architecture}
 This section details the specifications of my home server. 
 It lists all hardware, software and external resources. 
@@ -25,7 +39,7 @@ Additionally, I have another, much newer 250\unit{Go} SSD, which I am going to u
 This part lists the software I plan on using that are not services, but are necessary to the function of the server. It does not include external services.
 
 \subsubsection{Operating System}
-The operating system is \textbf{Debian 13 (Trixie)}. 
+The operating system is \textbf{Debian 13 (Trixie)}\cite{debian_wiki}. 
 It is a robust, stable and complete linux distro that is perfect for a simple server environment.
 It is also possible to move from debian towards \textbf{Proxmox VE 9.4} by changing the source repository of the OS. If the server ever becomes part of cluster, this will facilitate the migration.
 
@@ -39,7 +53,7 @@ This method is also familiar to me and is ideal for my intended Git-Ops workflow
 
 
 \subsubsection{Storage Management}
-ZFS is possibly the defining trait of the storage side of my server.
+\gls{zfs} is possibly the defining trait of the storage side of my server.
 It is a very powerful service that can create pools (arrays of multiple HDDs) and convert them into a
 R.A.I.D (Redundant Array of Independent Disks) configuration.
 
