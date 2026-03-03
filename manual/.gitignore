@@ -21,6 +21,9 @@
 *.lof
 *.lot
 
+# --- Whatever this is
+*.data.minted
+
 # --- Output File ---
 # Professionally, we ignore the PDF in Git. 
 # You should use GitHub "Releases" to host the official 
