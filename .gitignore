@@ -1,0 +1,22 @@
+# --- Secrets and Credentials ---
+# Never commit your actual environment variables
+.env
+.env.local
+ansible/.vault_pass
+
+# --- OS Metadata ---
+.DS_Store
+Thumbs.db
+*.log
+
+# --- IDE and Editor Configs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Docker Data (Optional Guardrail) ---
+# This ensures you don't accidentally sync massive database 
+# dumps or media files if you test locally
+**/data/*
+!**/data/.gitkeep

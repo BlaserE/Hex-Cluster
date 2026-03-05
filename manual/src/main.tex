@@ -1,0 +1,111 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ==========================================
+% 1. Document Setup & Core Packages
+% ==========================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage[margin=2.5cm]{geometry} % Margins
+
+% ==========================================
+% 2. Professional UI & Formatting
+% ==========================================
+\usepackage{fancyhdr}           % Custom headers/footers
+\usepackage{titlesec}           % Section styling
+\usepackage{booktabs}           % Professional tables 
+\usepackage{graphicx}           % Image handling
+\usepackage{xcolor}             % Modern color package
+\usepackage{listings}           % For code blocks (or minted)
+\usepackage{cprotect}           % Custom figure captions
+\usepackage{enumerate}          % Advanced lists
+
+% ==========================================
+% 3. Math & Diagrams (Useful for topologies)
+% ==========================================
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+\usepackage{units}
+\usepackage{pgf,tikz}
+\usetikzlibrary{arrows}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+
+% ==========================================
+% 4. Metadata & Hyperlinks
+% ==========================================
+\usepackage{hyperref}
+\hypersetup{
+    pdftitle={Home Server Provisioning SOP},
+    pdfauthor={Fort-Sovereign},
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+% ==========================================
+% 5. Bibliography & Glossary
+% ==========================================
+\usepackage[style=numeric, backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+\usepackage[toc]{glossaries}
+\makeglossaries
+
+% Note: It is best practice to keep ALL \newglossaryentry items 
+% inside your glossary.tex file to keep the main.tex clean.
+\input{glossary.tex}
+
+% ==========================================
+% 6. Global Styles
+% ==========================================
+\pagestyle{fancy}
+\fancyhf{} % Clear default header/footer
+\fancyhead[L]{Server Ops Manual}
+\fancyhead[R]{\thepage}
+
+% ==========================================
+% DOCUMENT CONTENT
+% ==========================================
+\begin{document}
+
+% --- Front Matter ---
+\pagenumbering{roman}
+\include{sections/pagetitre}
+
+\tableofcontents
+\newpage
+
+% --- Main Body ---
+\pagenumbering{arabic}
+
+% Layer 0: The Blueprint
+\include{sections/10_executive_summary}      % Philosophy & Architecture Diagram
+
+% Layer 1: The Foundation (Physical & OS)
+\include{sections/20_provisioning_baseline}  % Hardware, VPS Setup, Debian Install
+\include{sections/21_storage_zfs}            % ZFS Dataset hierarchy
+
+% Layer 2: The Logic (Ansible)
+\include{sections/30_ansible_orchestration}   % Common role & Idempotency
+
+% Layer 3: The Perimeter (Networking)
+\include{sections/40_network_hardening}      % Wireguard Tunnel & Hidden Bridge
+
+% Layer 4: The Services (Docker)
+\include{sections/50_service_orchestration}  % NPM, AdGuard, Vaultwarden
+\include{sections/51_gitops_workflow}        % Komodo Hub & GitHub CI/CD
+
+% Layer 5: The Intelligence (SRE)
+\include{sections/60_automation_observability} % n8n, Monitoring & Alerts
+
+% Layer 6: Maintenance
+\include{sections/70_disaster_recovery}      % 3-2-1 Backups & Recovery SOP
+
+% --- Back Matter ---
+\printglossary[title=Special Terms, toctitle=List of terms]
+
+\printbibliography[heading=bibintoc]
+
+\end{document}

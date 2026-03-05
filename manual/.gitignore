@@ -1,0 +1,40 @@
+# --- LaTeX Core Auxiliary Files ---
+*.aux
+*.log
+*.toc
+*.out
+*.gz
+*.synctex.gz
+
+# --- Build & Bibliography Tools ---
+*.blg
+*.bbl
+*.bcf
+*.xml
+*.fdb_latexmk
+*.fls
+*.acn
+*.glg
+*.glg-abr
+*.glo
+*.glo-abr
+*.gls
+*.gls-abr
+
+
+
+# --- Formatting & Indexing ---
+*.clo
+*.cnf
+*.ist
+*.lof
+*.lot
+
+# --- Whatever this is
+*.data.minted
+
+# --- Output File ---
+# Professionally, we ignore the PDF in Git. 
+# You should use GitHub "Releases" to host the official 
+# compiled version of your manual for your audience.
+*.pdf
