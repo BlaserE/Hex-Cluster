@@ -80,12 +80,28 @@
 % --- Main Body ---
 \pagenumbering{arabic}
 
-% Replaced \input with \include to automatically handle page breaks.
-% Renamed to semantic files based on your specific infrastructure.
-\include{sections/10_architecture_overview}
-\include{sections/20_storage_zfs_tank}
-\include{sections/30_networking_vmbr1}
-\include{sections/40_komodo_deployment}
+% Layer 0: The Blueprint
+\include{sections/10_executive_summary}      % Philosophy & Architecture Diagram
+
+% Layer 1: The Foundation (Physical & OS)
+\include{sections/20_provisioning_baseline}  % Hardware, VPS Setup, Debian Install
+\include{sections/21_storage_zfs}            % ZFS Dataset hierarchy
+
+% Layer 2: The Logic (Ansible)
+\include{sections/30_ansible_orchestration}   % Common role & Idempotency
+
+% Layer 3: The Perimeter (Networking)
+\include{sections/40_network_hardening}      % Wireguard Tunnel & Hidden Bridge
+
+% Layer 4: The Services (Docker)
+\include{sections/50_service_orchestration}  % NPM, AdGuard, Vaultwarden
+\include{sections/51_gitops_workflow}        % Komodo Hub & GitHub CI/CD
+
+% Layer 5: The Intelligence (SRE)
+\include{sections/60_automation_observability} % n8n, Monitoring & Alerts
+
+% Layer 6: Maintenance
+\include{sections/70_disaster_recovery}      % 3-2-1 Backups & Recovery SOP
 
 % --- Back Matter ---
 \printglossary[title=Special Terms, toctitle=List of terms]
