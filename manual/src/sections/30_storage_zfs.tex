@@ -1,2 +1,10 @@
-\chapter{Data Integrity \& Storage Hierarchy}\label{chap:ZFS}
-\section{Using ZFS}
+\chapter{Data Integrity \& Storage Hierarchy}\label{chap:storage}
+
+\section{OpenZFS}
+ZFS is a file system and logical volume manager that handles high-storage environments, combined with data integrity protection. It is open-source and distributed under the CDDL (Common Development and Distribution License) license. It utilizes \texttt{Copy-On-Write} mechanism so it does not overwrite existing blocks, allowing for powerful features like the following:
+
+\begin{itemize}
+	\item \textbf{Data Integrity :} It automatically detects and restores corrupted data by using checksums and mirroring/parity of drives.
+	\item \textbf{Storage Pooling :} It can combine physical drive into one large 'pool' of storage that is flexible and easy to expand in the future when adding more drives.
+	\item \textbf{Snapshots \& Clones :} It creates points in time 
+\end{itemize}
