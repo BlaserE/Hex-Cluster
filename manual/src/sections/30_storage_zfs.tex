@@ -1,51 +1,57 @@
 \chapter{Data Integrity \& Storage Hierarchy}\label{chap:storage}
-
-\section{OpenZFS}
-ZFS is a file system and logical volume manager that handles high-storage environments, combined with data integrity protection. It is open-source and distributed under the CDDL (Common Development and Distribution License) license. It utilizes \texttt{Copy-On-Write} mechanism so it does not overwrite existing blocks, allowing for powerful features like the following:
+\section{Mount Point Strategy}
+To maintain a standardized environment, ZFS datasets are mounted directly to the Debian 13 filesystem using the \texttt{mountpoint} property. This ensures that storage is automatically managed by the ZFS kernel module rather than \texttt{/etc/fstab}, making the storage pool entirely portable.
 
 \begin{itemize}
-	\item \textbf{Data Integrity :} It automatically detects and restores corrupted data by using checksums and mirroring/parity of drives.
-	\item \textbf{Storage Pooling :} It can combine physical drive into one large 'pool' of storage that is flexible and easy to expand in the future when adding more drives.
-	\item \textbf{Snapshots \& Clones :} It creates near-instantaneous, read-only "points in time" of your data. Because ZFS is \texttt{Copy-on-Write}, these snapshots take up zero additional space until the original data is modified.
+	\item \textbf{Host Mapping:} Datasets are mapped to the \texttt{/mnt} directory to separate infrastructure data from the OS root.
+	\begin{itemize}
+		\item \texttt{tank/appdata} $\rightarrow$ \texttt{/mnt/appdata}
+		\item \texttt{tank/db} $\rightarrow$ \texttt{/mnt/db}
+		\item \texttt{tank/media} $\rightarrow$ \texttt{/mnt/media}
+	\end{itemize}
+	\item \textbf{Container Mapping:} These standardized host paths are passed into Docker containers as bind-mounts (e.g., \texttt{/mnt/appdata/vaultwarden:/data}).
 \end{itemize}
 
-\section{Pool Initialization}
-The primary storage pool, \texttt{tank}, is initialized using a RAID-Z1 topology.
-This provides a balance between storage capacity and fault tolerance, allowing for a single drive failure without data loss or corruption.
 
-\begin{lstlisting}[language=bash, caption=ZFS Pool Creation]
-	# Identify disks by ID
-	ls -l /dev/disk/by-id/
+
+\begin{lstlisting}[language=bash, caption=Applying Professional Mount Points]
+	# Set the mountpoint property to override the default
+	/tank/ hierarchy
+	zfs set mountpoint=/mnt/appdata tank/appdata
+	zfs set mountpoint=/mnt/db tank/db
+	zfs set mountpoint=/mnt/media tank/media
 	
-	# Create the pool with shift=12 (for 4k sectors)
-	zpool create -o ashift=12 tank raidz1 \
-	/dev/disk/by-id/ata-ST8000... \
-	/dev/disk/by-id/ata-ST8000... \
-	/dev/disk/by-id/ata-ST8000...
+	# Verify the new hierarchy
+	zfs list
 \end{lstlisting}
 
-
-\section{Datasets Hierarchy}
-ZFS datasets are probably the main part of this chapter. To maximise ZFS potential, you must put your files into different \texttt{datasets}.
-
-Here is a basic table of datasets : \\
-
-\noindent
-\begin{tabularx}{\textwidth}{|l|X|l|l|}
-\hline
-\textbf{Dataset} & \textbf{Purpose} & \textbf{Recordsize} & \textbf{Snapshots} \\ \hline
-\texttt{tank/appdata} & Docker config files (YAML, JSON) & 128k (Default) & Daily \\ \hline
-\texttt{tank/db} & Databases (Postgres, SQLite) & 16k & Hourly \\ \hline
-\texttt{tank/media} & Large files (Movies, Photos) & 1M & Weekly \\ \hline
-\texttt{tank/backups} & Local backups and ISOs & 128k & None \\ \hline
-\end{tabularx}
+\section{Essential ZFS Properties}
+Beyond mount points and recordsizes, several pool-wide and dataset-specific properties are required to ensure the "Solid Foundation" of the server.
 
 \begin{itemize}
-	\item \textbf{Recordsize} is the total "write" volume every time new data is written on the disk. For general files, \texttt{128K} is fine, but for databases such as \texttt{SQL}, which writes in very small increments, it is necessary to lower the \texttt{recordsize} to prevent "write-amplification". This will increase the drive's lifespan and improves speed.
-	\item \textbf{Snapshots} are used as quick-access backup, simplifying the process of returning to a past point in time without needing to use external drives. It is not a main backup, as it only concerns the data itself, not the drive. However, scheduled snapshots is a safety that is enjoyable when needed, and easy to rollback.
+	\item \textbf{Compression (lz4):} Enabled by default on all datasets. LZ4 is extremely fast and reduces the physical footprint of configuration files and databases without a noticeable CPU penalty.
+	\item \textbf{Xattr (sa):} For Linux-based systems like Debian 13, setting \texttt{xattr=sa} stores extended attributes in the inode rather than hidden files, significantly improving performance for small file access.
+	\item \textbf{Atime (off):} Disables access-time updates every time a file is read. This reduces unnecessary write operations, extending the lifespan of the HDDs/SSDs.
+	\item \textbf{Canmount (off):} Set on the root \texttt{tank} dataset to prevent the system from mounting the parent pool directly, forcing strictly managed child dataset mounts.
 \end{itemize}
 
+\begin{lstlisting}[language=bash, caption=Optimizing Dataset Properties]
+	# Apply performance optimizations
+	zfs set compression=lz4 tank
+	zfs set xattr=sa tank
+	zfs set atime=off tank
+	
+	# Disable mounting for the root pool to keep /tank clean
+	zfs set canmount=off tank
+\end{lstlisting}
 
-\section{List of ZFS Properties}
+\section{Verification of Storage Logic}
+A professional SOP requires verification steps to ensure the foundation is correctly laid before moving to automation.
 
-Here is a short list of properties
+\begin{lstlisting}[language=bash, caption=Verifying the Foundation]
+	# Check that datasets are correctly hooked into /mnt
+	findmnt | grep tank
+	
+	# Check the health and parity of the RAID-Z1 pool
+	zpool status tank
+\end{lstlisting}
