@@ -58,12 +58,12 @@
 \usepackage[style=numeric, backend=biber]{biblatex}
 \addbibresource{references.bib}
 
-\usepackage[toc]{glossaries}
-
+\usepackage[acronym, toc]{glossaries-extra}
+\makeglossaries
 % Note: It is best practice to keep ALL \newglossaryentry items 
 % inside your glossary.tex file to keep the main.tex clean.
-\input{glossary.tex}
-\makeglossaries
+\loadglsentries{glossary.tex}
+
 
 % ==========================================
 % 6. Global Styles
@@ -86,6 +86,8 @@
 	\fancyfoot[C]{Page \thepage}
 	\renewcommand{\headrulewidth}{0.4pt}
 }
+
+
 
 % ==========================================
 % DOCUMENT CONTENT
@@ -128,8 +130,8 @@
 \include{sections/90_disaster_recovery}      % 3-2-1 Backups & Recovery SOP
 
 % --- Back Matter ---
+\glsaddall
 \printglossary[title=Special Terms, toctitle=List of terms]
-
 \printbibliography[heading=bibintoc]
 
 \end{document}

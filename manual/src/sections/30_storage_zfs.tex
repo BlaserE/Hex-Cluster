@@ -6,5 +6,46 @@ ZFS is a file system and logical volume manager that handles high-storage enviro
 \begin{itemize}
 	\item \textbf{Data Integrity :} It automatically detects and restores corrupted data by using checksums and mirroring/parity of drives.
 	\item \textbf{Storage Pooling :} It can combine physical drive into one large 'pool' of storage that is flexible and easy to expand in the future when adding more drives.
-	\item \textbf{Snapshots \& Clones :} It creates points in time 
+	\item \textbf{Snapshots \& Clones :} It creates near-instantaneous, read-only "points in time" of your data. Because ZFS is \texttt{Copy-on-Write}, these snapshots take up zero additional space until the original data is modified.
 \end{itemize}
+
+\section{Pool Initialization}
+The primary storage pool, \texttt{tank}, is initialized using a RAID-Z1 topology.
+This provides a balance between storage capacity and fault tolerance, allowing for a single drive failure without data loss or corruption.
+
+\begin{lstlisting}[language=bash, caption=ZFS Pool Creation]
+	# Identify disks by ID
+	ls -l /dev/disk/by-id/
+	
+	# Create the pool with shift=12 (for 4k sectors)
+	zpool create -o ashift=12 tank raidz1 \
+	/dev/disk/by-id/ata-ST8000... \
+	/dev/disk/by-id/ata-ST8000... \
+	/dev/disk/by-id/ata-ST8000...
+\end{lstlisting}
+
+
+\section{Datasets Hierarchy}
+ZFS datasets are probably the main part of this chapter. To maximise ZFS potential, you must put your files into different \texttt{datasets}.
+
+Here is a basic table of datasets : \\
+
+\noindent
+\begin{tabularx}{\textwidth}{|l|X|l|l|}
+\hline
+\textbf{Dataset} & \textbf{Purpose} & \textbf{Recordsize} & \textbf{Snapshots} \\ \hline
+\texttt{tank/appdata} & Docker config files (YAML, JSON) & 128k (Default) & Daily \\ \hline
+\texttt{tank/db} & Databases (Postgres, SQLite) & 16k & Hourly \\ \hline
+\texttt{tank/media} & Large files (Movies, Photos) & 1M & Weekly \\ \hline
+\texttt{tank/backups} & Local backups and ISOs & 128k & None \\ \hline
+\end{tabularx}
+
+\begin{itemize}
+	\item \textbf{Recordsize} is the total "write" volume every time new data is written on the disk. For general files, \texttt{128K} is fine, but for databases such as \texttt{SQL}, which writes in very small increments, it is necessary to lower the \texttt{recordsize} to prevent "write-amplification". This will increase the drive's lifespan and improves speed.
+	\item \textbf{Snapshots} are used a quick-access backup, simplifying the process of returning to a past point in time without needing to use external drives. It is not a main backup, as it only concerns the data itself, not the drive. However, scheduled snapshots is a safety that is enjoyable when needed.
+\end{itemize}
+
+
+\section{List of ZFS Properties}
+
+Here is a short list of properties
