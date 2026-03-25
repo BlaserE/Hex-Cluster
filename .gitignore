@@ -20,3 +20,5 @@ Thumbs.db
 # dumps or media files if you test locally
 **/data/*
 !**/data/.gitkeep
+*.acr
+*.alg

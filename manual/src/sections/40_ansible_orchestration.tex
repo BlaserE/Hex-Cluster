@@ -1,0 +1,51 @@
+\chapter{Configuration Management via Ansible}\label{chap:ansible}
+\section{The Role of Ansible}
+Ansible is an agentless IT automation tool used for configuring server management, application deployment as well as orchestration. 
+
+It uses a 'playbook' written in \texttt{YAML} to automate repetitive tasks accross infrastructure. It allows for secure, consistent and scalable management of systems without requiring special software to run on the target system because it runs over \texttt{SSH}.
+
+It's key features are :
+
+\begin{itemize}
+	\item \textbf{Agentless :} It only requires an \texttt{SSH} connection from the \texttt{Control Node} in order to run commands, so no software is needed on the \texttt{Managed Node}.
+	\item \textbf{Simple Language (YAML) :} Ansible uses \texttt{YAML} in files called "playbooks" which are easy to write, read and understand.
+	\item \textbf{Idempotency :} A core feature ensuring changes are only made if necessary, allowing systems to be configured to the desired state without undesired side-effects.
+\end{itemize}
+
+\newpage
+\section{Infrastructure as Code (IaC)}
+To maintain a professional and scalable environment, the Ansible project is organized into a modular directory structure. This allows for the separation of host-specific data from the reusable automation logic.
+
+\begin{itemize}
+	\item \textbf{inventory/hosts.ini:} Defines the IP addresses and connection details of the managed nodes.
+	\item \textbf{group\_vars/all.yml:} Contains global variables, such as the ZFS pool name (\texttt{tank}) and standard mount paths (\texttt{/mnt/appdata}).
+	\item \textbf{roles/common/:} The primary role containing the tasks for system hardening, ZFS property application, and Docker installation.
+	\item \textbf{site.yml:} The main playbook that ties the roles to the inventory hosts.
+\end{itemize}
+
+
+\begin{center}
+	\begin{minipage}{0.6\textwidth}
+		\dirtree{%
+			.1 /.
+			.2 inventory/.
+			.3 hosts.ini.
+			.2 group\_vars/.
+			.3 all.yml.
+			.2 roles/.
+			.3 common/.
+			.4 tasks/.
+			.5 main.yml.
+			.4 handlers/.
+			.5 main.yml.
+			.4 templates/.
+			.5 daemon.json.j2.
+			.2 site.yml.
+		}
+	\end{minipage}
+\end{center}
+
+
+
+\section{Common Role}
+This is the task that transforms the home server into the resilient fortress of code. It is what configures the server to be in the desired state. It automates installing packages, hardening the server and integrating \texttt{ZFS} correctly.

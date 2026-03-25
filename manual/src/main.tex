@@ -31,6 +31,7 @@
 \newcommand{\Z}{\mathbb{Z}}
 \newcommand{\R}{\mathbb{R}}
 \usepackage{tabularx}
+\usepackage{dirtree}
 
 % ==========================================
 % 4. Metadata & Hyperlinks
@@ -45,6 +46,12 @@
     citecolor=blue
 }
 
+% ==========================================
+% Personal Commands
+% ==========================================
+\newcommand{\docversion}{v0.0.1-GPL}
+\newcommand{\docauthor}{Eloi Blaser}
+\newcommand{\githubrepo}{https://github.com/BlaserE/Sovereign-Fort}
 
 % ==========================================
 % 5. Bibliography & Glossary
@@ -52,17 +59,17 @@
 \usepackage[style=numeric, backend=biber]{biblatex}
 \addbibresource{references.bib}
 
-\usepackage[toc]{glossaries}
+\usepackage[acronym, toc]{glossaries-extra}
 \makeglossaries
-
 % Note: It is best practice to keep ALL \newglossaryentry items 
 % inside your glossary.tex file to keep the main.tex clean.
-\input{glossary.tex}
+\loadglsentries{glossary.tex}
+
 
 % ==========================================
 % 6. Global Styles
 % ==========================================
-\newcommand{\docversion}{v0.0.1-GPL}
+
 
 % --- 2. Define the "Fancy" style for normal pages ---
 \pagestyle{fancy}
@@ -81,6 +88,8 @@
 	\renewcommand{\headrulewidth}{0.4pt}
 }
 
+
+
 % ==========================================
 % DOCUMENT CONTENT
 % ==========================================
@@ -91,6 +100,10 @@
 \include{sections/pagetitre}
 
 \include{sections/01_revision_history.tex}
+
+\section*{Disclaimer}
+\addcontentsline{toc}{section}{Disclaimer}
+The instructions and scripts provided in this manual are for educational and experimental purposes. While every effort has been made to ensure the accuracy of the "Sovereign-Fort" architecture, the author assumes no liability for data loss, hardware failure, or security breaches resulting from the use of this material. \textbf{Users are strongly advised to maintain verified backups before proceeding.}
 
 \tableofcontents
 \newpage
@@ -103,27 +116,27 @@
 
 % Layer 1: The Foundation (Physical & OS)
 \include{sections/20_provisioning_baseline}  % Hardware, VPS Setup, Debian Install
-\include{sections/21_storage_zfs}            % ZFS Dataset hierarchy
+\include{sections/30_storage_zfs}            % ZFS Dataset hierarchy
 
 % Layer 2: The Logic (Ansible)
-\include{sections/30_ansible_orchestration}   % Common role & Idempotency
+\include{sections/40_ansible_orchestration}   % Common role & Idempotency
 
 % Layer 3: The Perimeter (Networking)
-\include{sections/40_network_hardening}      % Wireguard Tunnel & Hidden Bridge
+\include{sections/50_network_hardening}      % Wireguard Tunnel & Hidden Bridge
 
 % Layer 4: The Services (Docker)
-\include{sections/50_service_orchestration}  % NPM, AdGuard, Vaultwarden
-\include{sections/51_gitops_workflow}        % Komodo Hub & GitHub CI/CD
+\include{sections/60_service_orchestration}  % NPM, AdGuard, Vaultwarden
+\include{sections/70_gitops_workflow}        % Komodo Hub & GitHub CI/CD
 
 % Layer 5: The Intelligence (SRE)
-\include{sections/60_automation_observability} % n8n, Monitoring & Alerts
+\include{sections/80_automation_observability.tex} % n8n, Monitoring & Alerts
 
 % Layer 6: Maintenance
-\include{sections/70_disaster_recovery}      % 3-2-1 Backups & Recovery SOP
+\include{sections/90_disaster_recovery}      % 3-2-1 Backups & Recovery SOP
 
 % --- Back Matter ---
+\glsaddall
 \printglossary[title=Special Terms, toctitle=List of terms]
-
 \printbibliography[heading=bibintoc]
 
 \end{document}

@@ -1,3 +1,29 @@
 \chapter{Base System Provisioning}\label{chap:base-provisioning}
-\section{Provisioning Baseline}
-This pertains to the overall final product after following this manual's instructions.
+\section{Hardware Requirements \& Baseline}
+While the "Sovereign-Fort" architecture is designed to be resource-efficient, the use of ZFS and containerized workloads necessitates a specific hardware baseline to ensure data-integrity and system responsiveness.
+
+\begin{itemize}
+	\item \textbf{CPU :} Any x86\_64 processor with at least 4 cores (e.g., Intel Core i5-7400 or equivalent).
+	\item \textbf{Memory :} Minimum 8GB RAM. (Note: ZFS utilizes adaptive replacement cache (ARC), so 16GB+ is recommended for heavy I/O workloads).
+	\item \textbf{Storage :} 
+	\begin{itemize}
+		\item 1x SSD (min. 64GB) for the Debian 13 OS and Docker Root.
+		\item 2x or more HDD/SSD for the ZFS \texttt{tank} pool (RAIDZ1 or Mirroring).
+	\end{itemize}
+	\item \textbf{GPU (Optional) :} Dedicated NVIDIA GPU (e.g., GTX 1060 6GB) for hardware-accelerated transcoding in services like Jellyfin or Immich.
+\end{itemize}
+
+\subsection{Test Environment}
+The reference implementation for this manual utilizes a an \texttt{Intel i5-7400} CPU and a \texttt{GTX 1060} GPU with 16\unit{GB} of system RAM. The ZFS pool used is composed of three (3) 8\unit{TB} SeaGate BarraCuda HDDs in a Raid-Z1 configuration, for a total usable 14.4\unit{TB} storage pool.
+
+\section{Prerequisites}
+
+
+\begin{itemize}
+	\item \textbf{Network :} An internet connection is needed for the installation, from start to finish and even during regular operations.
+	\item \textbf{Installation Media :} An external storage of a minimum of 32\unit{GB} of storage is needed for the \texttt{netinst} ISO. A static IP is also necessary since manually configured IPs do not change automatically, potentially breaking your services.
+	\item \textbf{External Gateway (Optional) :} Access to a VPS (Oracle \/ AWS \/ Azure \/ etc.) if following the Wireguard tunnel instructions in {Chapter }\ref{chap:security}
+	
+	
+	
+\end{itemize}

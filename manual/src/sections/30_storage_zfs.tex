@@ -1,0 +1,57 @@
+\chapter{Data Integrity \& Storage Hierarchy}\label{chap:storage}
+\section{Mount Point Strategy}
+To maintain a standardized environment, ZFS datasets are mounted directly to the Debian 13 filesystem using the \texttt{mountpoint} property. This ensures that storage is automatically managed by the ZFS kernel module rather than \texttt{/etc/fstab}, making the storage pool entirely portable.
+
+\begin{itemize}
+	\item \textbf{Host Mapping:} Datasets are mapped to the \texttt{/mnt} directory to separate infrastructure data from the OS root.
+	\begin{itemize}
+		\item \texttt{tank/appdata} $\rightarrow$ \texttt{/mnt/appdata}
+		\item \texttt{tank/db} $\rightarrow$ \texttt{/mnt/db}
+		\item \texttt{tank/media} $\rightarrow$ \texttt{/mnt/media}
+	\end{itemize}
+	\item \textbf{Container Mapping:} These standardized host paths are passed into Docker containers as bind-mounts (e.g., \texttt{/mnt/appdata/vaultwarden:/data}).
+\end{itemize}
+
+
+
+\begin{lstlisting}[language=bash, caption=Applying Professional Mount Points]
+	# Set the mountpoint property to override the default
+	/tank/ hierarchy
+	zfs set mountpoint=/mnt/appdata tank/appdata
+	zfs set mountpoint=/mnt/db tank/db
+	zfs set mountpoint=/mnt/media tank/media
+	
+	# Verify the new hierarchy
+	zfs list
+\end{lstlisting}
+
+\section{Essential ZFS Properties}
+Beyond mount points and recordsizes, several pool-wide and dataset-specific properties are required to ensure the "Solid Foundation" of the server.
+
+\begin{itemize}
+	\item \textbf{Compression (lz4):} Enabled by default on all datasets. LZ4 is extremely fast and reduces the physical footprint of configuration files and databases without a noticeable CPU penalty.
+	\item \textbf{Xattr (sa):} For Linux-based systems like Debian 13, setting \texttt{xattr=sa} stores extended attributes in the inode rather than hidden files, significantly improving performance for small file access.
+	\item \textbf{Atime (off):} Disables access-time updates every time a file is read. This reduces unnecessary write operations, extending the lifespan of the HDDs/SSDs.
+	\item \textbf{Canmount (off):} Set on the root \texttt{tank} dataset to prevent the system from mounting the parent pool directly, forcing strictly managed child dataset mounts.
+\end{itemize}
+
+\begin{lstlisting}[language=bash, caption=Optimizing Dataset Properties]
+	# Apply performance optimizations
+	zfs set compression=lz4 tank
+	zfs set xattr=sa tank
+	zfs set atime=off tank
+	
+	# Disable mounting for the root pool to keep /tank clean
+	zfs set canmount=off tank
+\end{lstlisting}
+
+\section{Verification of Storage Logic}
+A professional SOP requires verification steps to ensure the foundation is correctly laid before moving to automation.
+
+\begin{lstlisting}[language=bash, caption=Verifying the Foundation]
+	# Check that datasets are correctly hooked into /mnt
+	findmnt | grep tank
+	
+	# Check the health and parity of the RAID-Z1 pool
+	zpool status tank
+\end{lstlisting}
