@@ -38,3 +38,5 @@
 # You should use GitHub "Releases" to host the official 
 # compiled version of your manual for your audience.
 *.pdf
+# Images
+!assets/images/*.pdf
