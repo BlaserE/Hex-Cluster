@@ -1,2 +1,61 @@
-\chapter{Network Security \& Isolated Virtualization} \label{chap:security}
+\chapter{Networking Methodology \& Security} \label{chap:security}
+\section{Cluster Networking}
+In order to make a cluster, each node must be able to speak to each other. By default, firewalls block every \texttt{INGRESS} and allow every \texttt{EGRESS} traffic. Unfortunately, certain services requires  ports to be opened in order to function.
+
+Thus, ports for \texttt{SSH} (port 22), \texttt{K3} API (port 6443) and wireguard (port 51820) should always be opened by default. 
+
+TODO : Add actual physical cluster networking between nodes entry here.
+
+\section{Remote Acess \& Reverse Proxy}
+To make your server worthwhile, some services should be reachable by you from outside your network.
+There are many methods of reaching your server, some better than others. However, this is your server and you deserve to know your options. You are not limited to one. In fact, a combination can be prefered. 
+
+\begin{itemize}
+	\item \textbf{Tailscale} \\
+	The easiest remote access method on the market is Tailscale (add gls later). It is free, open source and relatively easy to use for one or more user (10 for free tier). It is built on Wireguard (see below) and adds features like NAT-punching to create tunnels.
+	\item \textbf{Wireguard} \\
+	Tailscale's simpler cousin. Is it efficient, silent and modern. It is more difficult but remains possible to use if you have a public IP to forward to (if your ISP or router allows it. Otherwise, a VPS with a public IP can work too). It creates encrypted tunnels between clients.
+	\item \textbf{Reverse Proxy} \\
+	Proxies create a layer between the client and the server. To access your services, you MUST pass through the reverse proxy. 
+	This allows you to forward your services to the public if you so wish, using \textbf{DNS-01 Challenge}.
+\end{itemize}
+
+A combination of those makes for a robust access. 
+Most people use \texttt{Tailscale} and a reverse proxy like \texttt{NGINX}, \texttt{Traefik} or \texttt{Caddy}.
+
+This creates layers of redundancy. If your proxy dies, then tailscale is likely to work still. 
+
 \section{Server Hardening}
+For a professional server environment, hardened security is a requirement. There are many factors to take into consideration to harden a server properly.
+
+As mentioned above, all \texttt{INGRESS} is blocked by default, but the ports you do open can still be protected in some manner. 
+\begin{itemize}
+	\item \textbf{SSH} \\
+	If your port for SSH is open to the public, there are two things you should do.
+	\begin{itemize}
+		\item \textbf{SSH Keys-Based Authentification} \\
+		Cryptographic keys replace vulnerable passwords.
+		By generating an \texttt{Ed25519} key pair, the server only grants access to holders of the private key.
+		\item \textbf{Daemon Hardening} \\
+		Disable \texttt{PermitRootLogin} and \texttt{PasswordAuthentication} in \texttt{/etc/ssh/sshd\_config}. This ensures that even if a password is leaked, the "front door" remains locked to anyone without a physical key file.
+		\item \textbf{SSH Port Obfuscation} \\
+		While not a replacement for security, changing the default port (22) to a high-range random port (e.g., 49152--65535) significantly reduces log-spam from automated scanners.
+	\end{itemize}
+	
+	\item Add a listings here for terminal commands.
+	
+	\item \textbf{IPS \& IDS} \\
+	Intrusion detection and prevention is a great tool to have in an environment where you have you have public facing services. 
+	\begin{itemize}
+		\item \textbf{Crowdsec} \\
+		It is an community Intrustion Prevention System that checks incoming IPs against public lists, blocking them in advance if they match. It is modern and performant. It users 'bouncers' to block the requests where they arrive (mostly at the reverse proxy). It does have a bouncer for \texttt{K3s} as well, so probably the better option.
+		
+		\item \textbf{Fail2Ban} \\
+		Crowdsec's senior. It has been around longer and more experienced, so also a great alternative.
+	\end{itemize}
+\end{itemize}
+
+\texttt{Tailscale} and \texttt{Wireguard} are not listed because they do not require it thanks to their behavior. \texttt{Wireguard} is a silent protocol, so if the requests are not authenticated, it does not answer. This makes discovery impossible unless authenticated.
+
+\section{Network Diagram}
+Insert diagram here
