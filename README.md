@@ -24,6 +24,8 @@ Stuff about deb 13 and K3 cluster. Blah blah nerd shit
 There are a lot of things I need to do before I can even release it for 1.0.0.
 
 Here they are :
+- **Finish the manual** <br>
+In order to start working on my environment. I need to flesh out the idea before I can get to work on it.
 - **Create Ansible playbook** <br>
 In order to create the machine-specific environment needed.
 - **K3 Configuration** <br>
