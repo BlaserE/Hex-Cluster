@@ -65,3 +65,28 @@ If you use centralized storage :
 
 
 \section{Network Orchestration}\label{section:pod-network}
+This section covers the networking configuration for the cluster as well as the access to the services deployed. The latter is the focus because internal networking doesn't require much configuration.
+
+\begin{itemize}
+	\item \textbf{Internal Traffic} () \\
+	Services within the cluster can communicate between themselves using DNS names, much like docker containers. 
+	There is no need to keep track of IPs or to meddle with that.
+	
+	\item \textbf{External Traffic (Ingress)} \\
+	To have access to your services, you must go through \texttt{K3s} built-in \texttt{Ingress} controller, built on a modified version of \texttt{Traefik}. This makes sure requests are forwarded to the right pod and is the layer that the \gls{reverse proxy} interacts with.
+\end{itemize}
+
+
+
+
+\subsection{Secure Remote Access}
+It is reccommended to set up secure remote access to reach 'admin' services that should never be opened to the public, such as your server's dashboard. 
+
+\begin{itemize}
+	\item \textbf{VPN Access (Zero-Exposure / Zero-Tier)} \\
+	Tools like Tailscale shine here if you do not need or want to push your services publicly. Things like admin services in particular.
+	\item \textbf{Reverse Proxy (Public-Facing)} \\
+	If you do want to push your services to the public, a reverse proxy is the way to go. It allows you to expose only your designated services and doesn't even touch the rest.
+	\item \textbf{Hybrid-Theory (VPN Access + Reverse Proxy)} \\
+	You can always combine both. It works very well. If your reverse proxy does not have direct access to your ingress controller, you can connect to it from the tailscale IP (because they are technically on the same network). Otherwise, having it in case your proxy goes down for any reason is good too.
+\end{itemize}
