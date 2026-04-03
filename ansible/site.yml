@@ -16,4 +16,6 @@
           - htop
           - git
           - curl
+          - docker
+          - kubernetes
         state: present

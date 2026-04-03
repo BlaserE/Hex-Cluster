@@ -22,3 +22,5 @@ Thumbs.db
 !**/data/.gitkeep
 *.acr
 *.alg
+
+.ansible/.lock
