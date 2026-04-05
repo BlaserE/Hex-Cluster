@@ -1,2 +1,7 @@
+# Default Variables for ZFS Pool
+
+# The name of the pool
 zfs_pool_name: "tank"
+
+# The mountpoint of the pool. This is where the contents of the pool is found in the filesystem.
 zfs_mount_base: "/mnt/tank"

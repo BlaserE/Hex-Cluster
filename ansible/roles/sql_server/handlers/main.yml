@@ -1,6 +1,6 @@
 # The file containing the handles whenever a 'notify' is called from a role
 ---
-- name: Restart Postgres
+- name: Restart PostgreSQL
   ansible.builtin.systemd:
     name: postgresql
     state: restarted

@@ -51,6 +51,11 @@
 - name: Setup Database and K3s Cluster
   hosts: compute
   become: true
+  vars_files:
+    - secrets/passwords.yml
   roles:
+    - role: sql_server
+      tags: ['kubernetes', 'sql_prep']
+
     - role: k3s
-      tags: ['kubernetes']
+      tags: ['kubernetes', 'k3s_prep']

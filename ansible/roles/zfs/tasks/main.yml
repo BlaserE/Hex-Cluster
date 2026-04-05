@@ -64,8 +64,8 @@
 
 - name: Ensure all datasets are mounted
   ansible.builtin.command: zfs mount -a
-  register: mount_out
-  changed_when: mount_out.stdout != ""
+  register: zfs_mount_out
+  changed_when: zfs_mount_out.stdout != ""
   tags: ["zfs", "storage"]
 
 - name: Create optimized SQL dataset
