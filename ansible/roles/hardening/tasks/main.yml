@@ -1,0 +1,46 @@
+---
+# roles/hardening/tasks/main.yml
+
+- name: Install UFW Firewall
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+  tags: ["firewall", "packages"]
+
+- name: Configure UFW Default Deny
+  community.general.ufw:
+    state: enabled
+    default: deny
+  tags: ["firewall", "config"]
+
+- name: Allow SSH through Firewall
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+  tags: ["firewall", "ssh"]
+
+- name: Allow K3s API through Firewall
+  community.general.ufw:
+    rule: allow
+    port: "6443"
+    proto: tcp
+  when: "'compute' in group_names"
+  tags: ["firewall", "k3s_prep"]
+
+- name: Allow SQL port through Firewall
+  community.general.ufw:
+    rule: allow
+    port: "5432"
+    proto: tcp
+  when: "'storage' in group_names"
+  tags: ["firewall", "sql_prep"]
+
+- name: Disable SSH Password Authentication
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Restart SSH
+  tags: ["ssh", "auth"]

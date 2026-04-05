@@ -14,7 +14,7 @@
         msg: "Hello World"
 
 - name: Physical Hardware Baseline
-  hosts: metal 
+  hosts: metal
   become: true
   tasks:
     - name: Update system
@@ -30,3 +30,27 @@
           - git
           - curl
         state: present
+
+# Play 1: Common baseline for every machine in the lab
+- name: Apply security hardening to all nodes
+  hosts: all
+  become: true
+  roles:
+    - role: hardening
+      tags: ['security']
+
+# Play 2: Storage-specific logic
+- name: Configure ZFS storage nodes
+  hosts: storage
+  become: true
+  roles:
+    - role: zfs
+      tags: ['storage']
+
+# Play 3: Infrastructure and Compute logic
+- name: Setup Database and K3s Cluster
+  hosts: compute
+  become: true
+  roles:
+    - role: k3s
+      tags: ['kubernetes']

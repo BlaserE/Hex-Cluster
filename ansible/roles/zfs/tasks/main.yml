@@ -1,3 +1,27 @@
 # The main task in charge of configurating ZFS on the target hosts.
 # This file is part of the Ansible role for ZFS configuration.
 # You can add tasks here to install ZFS, create pools, set properties, etc.
+---
+- name: Ensure ZFS utilities are installed
+  ansible.builtin.apt:
+    name: zfsutils-linux
+    state: present
+
+- name: Import the storage tank
+  ansible.builtin.command:
+    cmd: zpool import -a
+  register: zfs_zpool_result
+  failed_when:
+    - zfs_zpool_result.rc != 0
+    - "'no pools available to import' not in zfs_zpool_result.stderr"
+  changed_when: "'imported' in zfs_zpool_result.stdout"
+
+- name: Create optimized SQL dataset
+  community.general.zfs:
+    name: tank/postgres
+    state: present
+    extra_zfs_properties:
+      recordsize: 8k
+      compression: lz4
+      atime: false # or "off" in strings instead of a hard boolean value
+  tags: ['storage', 'sql_prep']

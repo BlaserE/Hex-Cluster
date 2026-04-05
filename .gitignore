@@ -24,6 +24,10 @@ Thumbs.db
 *.alg
 
 
-# Ansible
+# --- Ansible ---
 .ansible
-ansible/.venv
+ansible/.venv/
+ansible/.ansible/
+
+# --- Compressed Files ---
+**.tar.gz
