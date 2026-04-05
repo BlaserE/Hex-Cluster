@@ -45,7 +45,10 @@
   become: true
   roles:
     - role: zfs
-      tags: ['storage']
+      tags: ['zfs', 'storage']
+
+    - role: zfs_snapshots
+      tags: ['zfs', 'snapshots', 'storage']
 
 # Play 3: Infrastructure and Compute logic
 - name: Setup Database and K3s Cluster
@@ -55,7 +58,7 @@
     - secrets/passwords.yml
   roles:
     - role: sql_server
-      tags: ['kubernetes', 'sql_prep']
+      tags: ['kubernetes', 'sql_prep', 'sql']
 
     - role: k3s
       tags: ['kubernetes', 'k3s_prep']

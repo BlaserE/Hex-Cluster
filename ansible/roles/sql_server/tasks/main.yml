@@ -8,7 +8,7 @@
   ansible.builtin.apt:
     name:
       - postgresql
-      - python3-psycopg2 # Required for Ansible to talk to postgres
+      - python3-psycopg2
     state: present
   tags: ["sql", "packages"]
 
@@ -18,7 +18,7 @@
   changed_when: false
   tags: ["sql"]
 
-- name: Ensure PostgreSQL is stopped before moving data
+- name: Ensure PostgreSQL is stopped before configuration
   ansible.builtin.systemd:
     name: postgresql
     state: stopped
@@ -34,33 +34,21 @@
   tags: ["sql", "storage"]
 
 - name: Initialize PostgreSQL if the tank is empty
-  # Staying as root, calling su manually to avoid Ansible's ACL handshake
   ansible.builtin.shell:
     cmd: "su postgres -c '/usr/lib/postgresql/{{ sql_server_pg_version.stdout }}/bin/initdb -D /mnt/tank/postgres'"
     creates: "/mnt/tank/postgres/PG_VERSION"
   tags: ["sql", "storage"]
 
-- name: Check if the default Postgres directory is a real directory
-  ansible.builtin.stat:
-    path: "/var/lib/postgresql/{{ sql_server_pg_version.stdout }}/main"
-  register: pg_dir_stat
-  tags: ["sql", "storage"]
-
-- name: Remove default Postgres directory to allow symlink
-  ansible.builtin.file:
-    path: "/var/lib/postgresql/{{ sql_server_pg_version.stdout }}/main"
-    state: absent
-  # Only delete if it's a directory and NOT already a symlink (to avoid loops)
-  when: pg_dir_stat.stat.exists and pg_dir_stat.stat.isdir and not pg_dir_stat.stat.islnk
-  tags: ["sql", "storage"]
-
-- name: Link Postgres default directory to ZFS Tank
-  ansible.builtin.file:
-    src: "/mnt/tank/postgres"
-    dest: "/var/lib/postgresql/{{ sql_server_pg_version.stdout }}/main"
-    state: link
-    force: yes
-  tags: ["sql", "storage"]
+- name: Configure PostgreSQL to use ZFS path and allow remote connections
+  ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/postgresql.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^data_directory\s*=', line: "data_directory = '/mnt/tank/postgres'" }
+    - { regexp: '^#?listen_addresses\s*=', line: "listen_addresses = '*'" }
+  notify: Restart PostgreSQL
+  tags: ["sql", "network"]
 
 - name: Ensure PostgreSQL is started and enabled
   ansible.builtin.systemd:
@@ -68,21 +56,11 @@
     state: started
     enabled: true
   tags: ["sql"]
-  
+
 - name: Allow pg_hba.conf for K3s access
   ansible.builtin.lineinfile:
     path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/pg_hba.conf"
     line: "host k3s_db k3s_user {{ subnet_ip_range }} md5"
-  notify: Restart PostgreSQL
-  tags: ["sql", "network"]
-
-- name: Configure PostgreSQL to allow remote connections
-  ansible.builtin.lineinfile:
-    path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/postgresql.conf"
-    regexp: '^#?listen_addresses\s*='
-    line: "listen_addresses = '*'"
-    # We do the validation manually via shell to bypass Ansible's 'become' logic
-    validate: "sh -c 'cp %s /tmp/pg_conf_check && chown postgres:postgres /tmp/pg_conf_check && su postgres -c \"/usr/lib/postgresql/{{ sql_server_pg_version.stdout }}/bin/postgres --check -D /var/lib/postgresql/{{ sql_server_pg_version.stdout }}/main -c config_file=/tmp/pg_conf_check\" && rm /tmp/pg_conf_check'"
   notify: Restart PostgreSQL
   tags: ["sql", "network"]
 
