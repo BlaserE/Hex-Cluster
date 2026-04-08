@@ -31,7 +31,6 @@
           - curl
         state: present
 
-# Play 1: Common baseline for every machine in the lab
 - name: Apply security hardening to all nodes
   hosts: all
   become: true
@@ -39,7 +38,13 @@
     - role: hardening
       tags: ["security"]
 
-# Play 2: Storage-specific logic
+- name: Setup Basic Monitoring
+  hosts: metal
+  become: true
+  roles:
+    - role: monitoring
+      tags: ["monitoring"]
+
 - name: Configure ZFS storage nodes
   hosts: storage
   become: true
@@ -50,8 +55,11 @@
     - role: zfs_snapshots
       tags: ["zfs", "snapshots", "storage"]
 
+    - role: storage
+      tags: ['storage', 'zfs', 'csi']
+
 # Play 3: Infrastructure and Compute logic
-- name: Setup Database and K3s Cluster
+- name: Setup Database
   hosts: compute
   become: true
   vars_files:
@@ -60,12 +68,9 @@
     - role: sql_server
       tags: ["kubernetes", "sql_prep", "sql"]
 
-    - role: k3s
-      tags: ["kubernetes", "k3s_prep"]
-
-- name: Setup Basic Monitoring
-  hosts: metal
+- name: Setup K3s cluster
+  hosts: compute
   become: true
   roles:
-    - role: monitoring
-      tags: ["monitoring"]
+    - role: k3s
+      tags: ["kubernetes", "k3s_prep"]

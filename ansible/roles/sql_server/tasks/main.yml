@@ -16,7 +16,7 @@
   ansible.builtin.command: "psql --version | awk '{print $3}' | cut -d. -f1"
   register: sql_server_pg_version
   changed_when: false
-  tags: ["sql"]
+  tags: ["sql", "storage"]
 
 - name: Ensure PostgreSQL is stopped before configuration
   ansible.builtin.systemd:
@@ -33,17 +33,29 @@
     state: directory
   tags: ["sql", "storage"]
 
-- name: Init DB
-  ansible.builtin.command:
-    cmd: "su postgres -c '/usr/lib/postgresql/{{ sql_server_pg_version.stdout }}/bin/initdb -D /mnt/tank/postgres'"
-    creates: "/mnt/tank/postgres/PG_VERSION"
-  tags: ["sql", "storage"]
-
 - name: Initialize PostgreSQL if the tank is empty
   ansible.builtin.command:
-    cmd: "su postgres -c '/usr/lib/postgresql/{{ sql_server_pg_version.stdout }}/bin/initdb -D /mnt/tank/postgres'"
+    cmd: "/usr/lib/postgresql/{{ sql_server_pg_version.stdout }}/bin/initdb -D /mnt/tank/postgres"
     creates: "/mnt/tank/postgres/PG_VERSION"
+  become: true
+  become_user: postgres
   tags: ["sql", "storage"]
+
+- name: Ensure PostgreSQL uses the conf.d file
+  ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/postgresql.conf"
+    regexp: "^#?include_dir = 'conf.d'"
+    line: "include_dir = 'conf.d'"
+  tags: ["sql", "setup"]
+
+- name: Ensure conf.d file exists
+  ansible.builtin.file:
+    path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/conf.d"
+    owner: postgres
+    group: postgres
+    mode: "0755"
+    state: directory
+  tags: ['sql', 'setup']
 
 - name: Apply PostgreSQL storage and network configuration via conf.d
   ansible.builtin.copy:

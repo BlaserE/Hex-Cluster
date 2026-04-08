@@ -1,0 +1,17 @@
+# Sanoid template file managed by Ansible
+# This is then copied into the storage server for Sanoid to use.
+
+[template_production]
+    hourly = 24
+    daily = 30
+    monthly = 3
+    autosnap = yes
+    autoprune = yes
+
+[{{ zfs_pool_name }}/postgres]
+    use_template = production
+    recursive = yes
+
+[{{ zfs_pool_name }}/k3s]
+    use_template = production
+    recursive = yes

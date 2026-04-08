@@ -1,0 +1,7 @@
+# The ZFS Snapshot role handler file
+# Clustern/ansible/roles/zfs_snapshot/handlers/main.yml
+---
+- name: Restart Sanoid
+  ansible.builtin.systemd:
+    name: sanoid.service
+    state: started

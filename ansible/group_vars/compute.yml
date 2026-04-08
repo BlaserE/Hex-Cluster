@@ -1,4 +1,2 @@
 # Group variables for the compute group.
-
-
-
+k3s_sql_endpoint: "postgres://k3s_user:{{ db_password }}@{{ main_storage_ip }}:5432/k3s_db"

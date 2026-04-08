@@ -20,7 +20,7 @@
   ansible.builtin.file:
     path: /mnt/tank/k3s/nfs
     owner: "csi-admin"
-    mode: "750"
+    mode: "0750"
     state: directory
   tags: ["csi", "storage", "setup"]
 
