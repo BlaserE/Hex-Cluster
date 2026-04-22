@@ -1,0 +1,40 @@
+name: Release-Compiler
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'VERSION'
+
+
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - id: get_version
+        run: echo "V_NUM=$(cat VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Prepare Version for LaTeX
+        run: cp VERSION Clustern/manual/src/VERSION
+
+      - name: Compile LaTeX Manual
+        uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: Clustern/manual/src
+          root_file: main.tex
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.V_NUM }}
+          files: Clustern/manual/src/main.pdf 
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
