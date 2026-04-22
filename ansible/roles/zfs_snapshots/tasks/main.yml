@@ -1,0 +1,41 @@
+# The role for automating and configuring ZFS snapshots.
+
+---
+- name: Install Sanoid and dependencies
+  ansible.builtin.apt:
+    name:
+      - sanoid
+      - mbuffer # Helps with faster ZFS send/recv later
+      - lzop # Compression for snapshots
+    state: present
+  tags: ["backup", "zfs"]
+
+- name: Create Sanoid configuration directory
+  ansible.builtin.file:
+    path: /etc/sanoid
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  tags: ["backup"]
+
+- name: Configure Sanoid
+  ansible.builtin.template:
+    src: sanoid.conf.j2
+    dest: /etc/sanoid/sanoid.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Sanoid
+  tags: ['backup', 'policy', 'zfs', 'sanoid']
+
+- name: Enable and start Sanoid timer
+  ansible.builtin.systemd:
+    name: sanoid.timer
+    enabled: true
+  tags: ["backup"]
+
+- name: Take initial manual snapshot to verify
+  ansible.builtin.command: "sanoid --take-snapshots"
+  changed_when: false
+  tags: ["backup"]

@@ -39,7 +39,7 @@
 \usepackage{hyperref}
 \hypersetup{
     pdftitle={Home Server Provisioning SOP},
-    pdfauthor={Fort-Sovereign},
+    pdfauthor={Eloi Blaser},
     colorlinks=true,
     linkcolor=blue,
     urlcolor=blue,
@@ -49,9 +49,14 @@
 % ==========================================
 % Personal Commands
 % ==========================================
-\newcommand{\docversion}{v0.2.0-GPL}
+% \newcommand{\projectversion}{v0.2.0-GPL}
 \newcommand{\docauthor}{Eloi Blaser}
 \newcommand{\githubrepo}{https://github.com/BlaserE/Clustern}
+
+% For versioning
+\usepackage{catchfile}
+\CatchFileDef{\docversion}{../../VERSION}{}
+
 
 % ==========================================
 % 5. Bibliography & Glossary
@@ -75,14 +80,14 @@
 \pagestyle{fancy}
 \fancyhf{} 
 \renewcommand{\headrulewidth}{0.4pt}
-\fancyhead[L]{\textbf{Server Operations Manual} --- \docversion}
+\fancyhead[L]{\textbf{Server Operations Manual} --- v\docversion}
 \fancyhead[R]{GPLv3 License}
 \fancyfoot[C]{Page \thepage}
 
 % --- 3. Force the "Plain" style (Chapter starts) to match ---
 \fancypagestyle{plain}{
 	\fancyhf{}
-	\fancyhead[L]{\textbf{Server Operations Manual} --- \docversion}
+	\fancyhead[L]{\textbf{Server Operations Manual} --- v\docversion}
 	\fancyhead[R]{GPLv3 License}
 	\fancyfoot[C]{Page \thepage}
 	\renewcommand{\headrulewidth}{0.4pt}

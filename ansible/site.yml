@@ -1,0 +1,76 @@
+# The ultimate executable.
+# This is the source of truth for the Ansible configuration.
+# It will configure the designated hosts
+
+---
+- name: Testing Machine Cluster.
+  hosts: metal
+  tasks:
+    - name: Pinging The Cluster.
+      ansible.builtin.ping:
+
+    - name: Hello World.
+      ansible.builtin.debug:
+        msg: "Hello World"
+
+- name: Physical Hardware Baseline
+  hosts: metal
+  become: true
+  tasks:
+    - name: Update system
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install essential packages
+      ansible.builtin.apt:
+        name:
+          - vim
+          - ufw
+          - htop
+          - git
+          - curl
+        state: present
+
+- name: Apply security hardening to all nodes
+  hosts: all
+  become: true
+  roles:
+    - role: hardening
+      tags: ["security"]
+
+- name: Setup Basic Monitoring
+  hosts: metal
+  become: true
+  roles:
+    - role: monitoring
+      tags: ["monitoring"]
+
+- name: Configure ZFS storage nodes
+  hosts: storage
+  become: true
+  roles:
+    - role: zfs
+      tags: ["zfs", "storage"]
+
+    - role: zfs_snapshots
+      tags: ["zfs", "snapshots", "storage"]
+
+    - role: storage
+      tags: ['storage', 'zfs', 'csi']
+
+# Play 3: Infrastructure and Compute logic
+- name: Setup Database
+  hosts: compute
+  become: true
+  vars_files:
+    - secrets/passwords.yml
+  roles:
+    - role: sql_server
+      tags: ["kubernetes", "sql_prep", "sql"]
+
+- name: Setup K3s cluster
+  hosts: compute
+  become: true
+  roles:
+    - role: k3s
+      tags: ["kubernetes", "k3s_prep"]

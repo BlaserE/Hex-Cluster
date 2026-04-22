@@ -1,0 +1,7 @@
+---
+warn_list:
+  - yaml[trailing-spaces]
+  - yaml[new-line-at-end-of-file]
+
+exclude_paths:
+  - inventory/inventory-exemple.yml # Ignore the example files entirely

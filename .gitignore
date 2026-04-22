@@ -1,24 +1,39 @@
+# --- MAIN GITIGNORE ---
+# This is at the root of the repository, handles all stray undesired files until their are
+# moved to their specific directory (scope-specific)
+
 # --- Secrets and Credentials ---
-# Never commit your actual environment variables
+# Pretty lackluster, needs work too. No longer using docker but kubernetes, so I will have to change this part
 .env
 .env.local
 ansible/.vault_pass
 
 # --- OS Metadata ---
+# Just dumb things really. Shouldn't pose a problem
 .DS_Store
 Thumbs.db
 *.log
 
 # --- IDE and Editor Configs ---
+# The pain in the ass of any good git architect
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# --- Docker Data (Optional Guardrail) ---
-# This ensures you don't accidentally sync massive database 
-# dumps or media files if you test locally
+# --- Docker Data ---
+# Yet another potentially useless section
 **/data/*
 !**/data/.gitkeep
 *.acr
 *.alg
+
+
+# --- Ansible ---
+# Contrary to the rest, possibly very necessary
+.ansible
+ansible/.venv/
+ansible/.ansible/
+
+# --- Compressed Files ---
+**.tar.gz

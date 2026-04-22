@@ -1,0 +1,128 @@
+# The main task in charge of configurating ZFS on the target hosts.
+# This file is part of the Ansible role for ZFS configuration.
+# You can add tasks here to install ZFS, create pools, set properties, etc.
+---
+- name: Install gpg for repository management
+  ansible.builtin.apt:
+    name: gpg
+    state: present
+  tags: ["zfs", "setup", "packages"]
+
+- name: Enable contrib and non-free components
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian/ {{ ansible_distribution_release }} main contrib non-free-firmware non-free"
+    state: present
+  register: zfs_repo_added
+  tags: ["zfs", "setup", "packages"]
+
+- name: Ensure ZFS utilities are installed
+  ansible.builtin.apt:
+    name:
+      - "linux-headers-amd64" # This meta-package always points to the right headers
+      - zfs-dkms
+      - zfsutils-linux
+    state: present
+  tags: ["zfs", "packages", "storage"]
+
+- name: Ensure ZFS module is loaded at boot
+  ansible.builtin.copy:
+    content: "zfs"
+    dest: /etc/modules-load.d/zfs.conf
+    mode: "0644"
+  tags: ["zfs", "setup"]
+
+- name: Load ZFS module immediately
+  community.general.modprobe:
+    name: zfs
+    state: present
+  tags: ["zfs", "setup"]
+
+- name: Import the storage tank
+  ansible.builtin.command:
+    cmd: zpool import -af
+  register: zfs_zpool_result
+  failed_when:
+    - zfs_zpool_result.rc != 0
+    - "'no pools available to import' not in zfs_zpool_result.stderr"
+    - "'a pool with that name already exists' not in zpool_import.stderr"
+  changed_when: "'imported' in zfs_zpool_result.stdout"
+  tags: ["zfs", "storage"]
+
+
+- name: Verify tank pool is online
+  ansible.builtin.command: zpool list tank
+  register: zfs_pool_check
+  changed_when: false
+  failed_when: false
+  tags: ["zfs", "storage"]
+
+- name: Set mountpoint for the pool dataset
+  community.general.zfs:
+    name: "{{ zfs_pool_name }}"
+    state: present
+    extra_zfs_properties:
+      mountpoint: "{{ zfs_mount_base }}"
+  tags: ["zfs", "storage"]
+
+- name: Ensure all datasets are mounted
+  ansible.builtin.command: zfs mount -a
+  register: zfs_mount_out
+  changed_when: zfs_mount_out.stdout != ""
+  tags: ["zfs", "storage"]
+
+- name: Create optimized SQL dataset
+  community.general.zfs:
+    name: tank/postgres
+    state: present
+    extra_zfs_properties:
+      recordsize: 8k
+      compression: lz4
+      atime: "off" # better than pure false, more explicite by using "off"
+  tags: ["zfs", "storage", "sql_prep", "setup"]
+
+# The K3s dataset is the general-purpose dataset for K3s.
+# By itself, it holds no data. However, it does have two children datasets :
+# nfs and iscsi.
+- name: Create K3s dataset
+  community.general.zfs:
+    name: tank/k3s
+    state: present
+    extra_zfs_properties:
+      compression: lz4
+      canmount: "off"
+  tags: ["zfs", "k3s", "storage", "setup"]
+
+# The NFS-specific dataset.
+# Mostly used by pods for static-ish data.
+- name: Create NFS dataset
+  community.general.zfs:
+    name: tank/k3s/nfs
+    state: present
+    extra_zfs_properties:
+      mountpoint: /mnt/tank/k3s/nfs
+      sharenfs: "off"
+      # Turned off because the CSI driver will handle the exports
+  tags: ["zfs", "k3s", "storage", "setup"]
+
+# The SQLite-specific dataset.
+# It is the parent dataset for every volume that will be used by pods that REQUIRE SQLite
+# AND that does not support an SQL server. It is the solution for persistant network SQLite storage.
+- name: Create iSCSI dataset
+  community.general.zfs:
+    name: tank/k3s/iscsi
+    state: present
+    extra_zfs_properties:
+      canmount: "off"
+      # off because it is strictly a parent dataset for zvols which will be mounted to individual pods.
+
+- name: Ensure ZFS Cache File Exists
+  ansible.builtin.command:
+    cmd: "zpool set cachefile=/etc/zfs/zpool.cache {{ zfs_pool_name }}"
+    creates: /etc/zfs/zpool.cache
+  tags: ["zfs", "setup", "storage"]
+
+- name: Update initramfs to include ZFS cache
+  ansible.builtin.command:
+    cmd: "update-initramfs -u"
+  changed_when: false
+  tags: ["zfs", "setup"]

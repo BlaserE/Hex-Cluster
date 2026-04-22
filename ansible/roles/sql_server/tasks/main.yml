@@ -1,0 +1,100 @@
+# The task in charge of configuring the SQL server that K3s will use for its internal database.
+# This one can only be called on the storage node(s).
+# Currently, my setup only has a single storage node.
+# Distributed SQL remains a mystery to me. I will not attempt.
+
+---
+- name: Install PostgreSQL and Python drivers
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - python3-psycopg2
+    state: present
+  tags: ["sql", "packages"]
+
+- name: Find PostgreSQL version
+  ansible.builtin.command: "psql --version | awk '{print $3}' | cut -d. -f1"
+  register: sql_server_pg_version
+  changed_when: false
+  tags: ["sql", "storage"]
+
+- name: Ensure PostgreSQL is stopped before configuration
+  ansible.builtin.systemd:
+    name: postgresql
+    state: stopped
+  tags: ["sql"]
+
+- name: Ensure ZFS dataset has correct permissions
+  ansible.builtin.file:
+    path: "/mnt/tank/postgres"
+    owner: postgres
+    group: postgres
+    mode: "0700"
+    state: directory
+  tags: ["sql", "storage"]
+
+- name: Initialize PostgreSQL if the tank is empty
+  ansible.builtin.command:
+    cmd: "/usr/lib/postgresql/{{ sql_server_pg_version.stdout }}/bin/initdb -D /mnt/tank/postgres"
+    creates: "/mnt/tank/postgres/PG_VERSION"
+  become: true
+  become_user: postgres
+  tags: ["sql", "storage"]
+
+- name: Ensure PostgreSQL uses the conf.d file
+  ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/postgresql.conf"
+    regexp: "^#?include_dir = 'conf.d'"
+    line: "include_dir = 'conf.d'"
+  tags: ["sql", "setup"]
+
+- name: Ensure conf.d file exists
+  ansible.builtin.file:
+    path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/conf.d"
+    owner: postgres
+    group: postgres
+    mode: "0755"
+    state: directory
+  tags: ['sql', 'setup']
+
+- name: Apply PostgreSQL storage and network configuration via conf.d
+  ansible.builtin.copy:
+    dest: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/conf.d/99-custom-config.conf"
+    content: |
+      data_directory = '/mnt/tank/postgres'
+      listen_addresses = '*'
+    owner: postgres
+    group: postgres
+    mode: "0644"
+  notify: Restart PostgreSQL
+  tags: ["sql", "network"]
+
+- name: Ensure PostgreSQL is started and enabled
+  ansible.builtin.systemd:
+    name: postgresql
+    state: started
+    enabled: true
+  tags: ["sql"]
+
+- name: Allow pg_hba.conf for K3s access
+  ansible.builtin.lineinfile:
+    path: "/etc/postgresql/{{ sql_server_pg_version.stdout }}/main/pg_hba.conf"
+    line: "host k3s_db k3s_user {{ subnet_ip_range }} scram-sha-256"
+  notify: Restart PostgreSQL
+  tags: ["sql", "network"]
+
+- name: Create K3s database user
+  community.postgresql.postgresql_user:
+    name: k3s_user
+    password: "{{ db_password }}"
+    role_attr_flags: "CREATEDB"
+  become: true
+  become_user: postgres
+  tags: ["sql"]
+
+- name: Create K3s database
+  community.postgresql.postgresql_db:
+    name: k3s
+    state: present
+  become: true
+  become_user: postgres

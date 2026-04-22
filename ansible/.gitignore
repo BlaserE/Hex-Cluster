@@ -1,0 +1,18 @@
+# Ansible-specific ignores
+*.retry
+*.log
+.ansible_cache/
+.ansible/
+
+# --- Local environment files ---
+# Largely useless now
+venv/
+--pycache__/
+
+# --- Infrastructure secrets ---
+# This is the secrets dir, it should NEVER, EVER be uploaded to git. 
+# I am not responsible if any sensitive data is added to the git by mistake.
+secrets/*
+!secrets/inventory.yml.exemple
+*.key
+*.pem
