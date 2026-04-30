@@ -5,8 +5,6 @@ on:
     paths:
       - 'VERSION'
 
-
-
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -15,22 +13,22 @@ jobs:
       contents: write 
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Commit
         uses: actions/checkout@v6
 
       - id: get_version
         run: echo "V_NUM=$(cat VERSION)" >> $GITHUB_OUTPUT
 
-      - name: Prepare Version for LaTeX
+      - name: Move VERSION to LaTex root
         run: cp VERSION manual/src/VERSION
 
-      - name: Compile LaTeX Manual
+      - name: Compile LaTex to .pdf
         uses: xu-cheng/latex-action@v4
         with:
           working_directory: manual/src
           root_file: main.tex
 
-      - name: Create Release
+      - name: Create Release Draft
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.get_version.outputs.V_NUM }}
