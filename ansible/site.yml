@@ -3,18 +3,28 @@
 # It will configure the designated hosts
 
 ---
-- name: Testing Machine Cluster.
-  hosts: metal
-  tasks:
-    - name: Pinging The Cluster.
-      ansible.builtin.ping:
 
-    - name: Hello World.
-      ansible.builtin.debug:
-        msg: "Hello World"
 
 - name: Physical Hardware Baseline
   hosts: metal
+  become: true
+  tasks:
+    - name: Update system
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install essential packages
+      ansible.builtin.apt:
+        name:
+          - vim
+          - ufw
+          - htop
+          - git
+          - curl
+        state: present
+
+- name: Gateway Baseline
+  hosts: gateway
   become: true
   tasks:
     - name: Update system
@@ -56,9 +66,8 @@
       tags: ["zfs", "snapshots", "storage"]
 
     - role: storage
-      tags: ['storage', 'zfs', 'csi']
+      tags: ["storage", "zfs", "csi"]
 
-# Play 3: Infrastructure and Compute logic
 - name: Setup Database
   hosts: compute
   become: true
@@ -74,3 +83,27 @@
   roles:
     - role: k3s
       tags: ["kubernetes", "k3s_prep"]
+
+- name: Configure gateway VPS
+  hosts: gateway
+  become: true
+  vars_files:
+    - host_vars/gateway-1/secrets.yml
+  roles:
+    - role: docker
+      tags: ["docker"]
+
+    - role: wg_gateway
+      tags: ["wireguard"]
+
+    - role: headscale
+      tags: ["headscale"]
+
+    - role: haproxy_sni
+      tags: ["haproxy"]
+
+    - role: crowdsec
+      tags: ["crowdsec"]
+
+    - role: restic_backup
+      tags: ["restic"]

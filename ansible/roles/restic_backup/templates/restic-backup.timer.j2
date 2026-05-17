@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Run Restic backup daily
+
+[Timer]
+OnCalendar=*-*-* {{ restic_timer }}:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

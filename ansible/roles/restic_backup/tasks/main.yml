@@ -1,0 +1,79 @@
+---
+- name: Install restic and sqlite3
+  ansible.builtin.apt:
+    name:
+      - restic
+      - sqlite3
+    state: present
+    update_cache: true
+  tags: ["restic", "packages"]
+
+- name: Create restic config directory
+  ansible.builtin.file:
+    path: /etc/restic
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  tags: ["restic"]
+
+- name: Deploy environment file
+  ansible.builtin.template:
+    src: gateway.env.j2
+    dest: "{{ restic_env_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  tags: ["restic", "config"]
+
+- name: Deploy pre-backup script
+  ansible.builtin.template:
+    src: pre-backup.sh.j2
+    dest: "{{ restic_pre_backup_script }}"
+    owner: root
+    group: root
+    mode: "0700"
+  tags: ["restic", "config"]
+
+- name: Deploy systemd service unit
+  ansible.builtin.template:
+    src: restic-backup.service.j2
+    dest: /etc/systemd/system/restic-backup.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd
+  tags: ["restic", "config"]
+
+- name: Deploy systemd timer unit
+  ansible.builtin.template:
+    src: restic-backup.timer.j2
+    dest: /etc/systemd/system/restic-backup.timer
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd
+  tags: ["restic", "config"]
+
+- name: Initialize restic repository
+  ansible.builtin.command:
+    cmd: restic init
+  environment:
+    RESTIC_REPOSITORY: "b2:{{ restic_b2_bucket }}:headscale"
+    RESTIC_PASSWORD: "{{ restic_password }}"
+    B2_ACCOUNT_ID: "{{ restic_b2_account_id }}"
+    B2_ACCOUNT_KEY: "{{ restic_b2_account_key }}"
+  register: restic_init
+  failed_when: >
+    restic_init.rc != 0 and
+    'already initialized' not in restic_init.stderr
+  changed_when: restic_init.rc == 0
+  tags: ["restic"]
+
+- name: Enable and start restic timer
+  ansible.builtin.systemd:
+    name: restic-backup.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  tags: ["restic"]

@@ -1,0 +1,13 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# Runs before restic snapshot — dumps live SQLite DB to a safe copy.
+# Restic backs up the copy, never the live file.
+
+set -euo pipefail
+
+LIVE_DB="{{ headscale_data_dir }}/lib/db.sqlite"
+BACKUP_DB="{{ headscale_data_dir }}/lib/db.sqlite.bak"
+
+echo "Pre-backup: dumping Headscale SQLite..."
+sqlite3 "$LIVE_DB" ".backup '$BACKUP_DB'"
+echo "Pre-backup: done."

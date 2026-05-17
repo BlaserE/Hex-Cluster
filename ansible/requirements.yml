@@ -1,0 +1,8 @@
+# The requirements for running this ansible playbook
+---
+collections:
+  - name: community.general    # ufw module
+    version: ">=9.0.0"
+
+  - name: community.docker     # docker_compose_v2 module
+    version: ">=3.0.0"

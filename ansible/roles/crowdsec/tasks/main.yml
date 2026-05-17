@@ -1,7 +1,14 @@
 ---
-- name: Install CrowdSec apt repository
-  ansible.builtin.shell:
-    cmd: curl -s https://install.crowdsec.net | sh
+- name: Download CrowdSec repository install script
+  ansible.builtin.get_url:
+    url: https://install.crowdsec.net
+    dest: /tmp/crowdsec-install.sh
+    mode: "0700"
+  tags: ["crowdsec", "packages"]
+
+- name: Run CrowdSec repository install script
+  ansible.builtin.command:
+    cmd: /tmp/crowdsec-install.sh
     creates: /etc/apt/sources.list.d/crowdsec_crowdsec.list
   tags: ["crowdsec", "packages"]
 

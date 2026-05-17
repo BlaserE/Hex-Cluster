@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Restic backup to Backblaze B2
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+EnvironmentFile={{ restic_env_file }}
+ExecStartPre={{ restic_pre_backup_script }}
+ExecStart=restic backup --verbose {% for path in restic_backup_paths %}{{ path }} {% endfor %}
+
+ExecStartPost=restic forget \
+  --keep-daily {{ restic_keep_daily }} \
+  --keep-weekly {{ restic_keep_weekly }} \
+  --keep-monthly {{ restic_keep_monthly }} \
+  --prune
