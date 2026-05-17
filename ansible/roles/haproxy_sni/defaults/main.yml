@@ -1,0 +1,18 @@
+---
+haproxy_package: haproxy
+haproxy_config_path: /etc/haproxy/haproxy.cfg
+haproxy_sni_port: 443
+haproxy_inspect_delay: 5s
+
+# Defined per-host in host_vars:
+# haproxy_sni_backends:
+#   - name: headscale
+#     sni: headscale.yourdomain.com
+#     match: exact          # exact or suffix
+#     backend_host: 127.0.0.1
+#     backend_port: 8080
+#   - name: cluster
+#     sni: .yourdomain.com  # leading dot for suffix match
+#     match: suffix
+#     backend_host: 10.10.0.0
+#     backend_port: 443

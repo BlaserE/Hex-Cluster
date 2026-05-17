@@ -1,0 +1,32 @@
+---
+- name: Install HAProxy
+  ansible.builtin.apt:
+    name: "{{ haproxy_package }}"
+    state: present
+    update_cache: true
+  tags: ["haproxy", "packages"]
+
+- name: Deploy HAProxy config
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "{{ haproxy_config_path }}"
+    owner: root
+    group: root
+    mode: "0640"
+    validate: haproxy -c -f %s
+  notify: Restart HAProxy
+  tags: ["haproxy", "config"]
+
+- name: Enable and start HAProxy
+  ansible.builtin.systemd:
+    name: haproxy
+    enabled: true
+    state: started
+  tags: ["haproxy"]
+
+- name: Allow HTTPS through UFW
+  community.general.ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
+  tags: ["haproxy", "firewall"]

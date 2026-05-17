@@ -1,0 +1,49 @@
+---
+- name: Install CrowdSec apt repository
+  ansible.builtin.shell:
+    cmd: curl -s https://install.crowdsec.net | sh
+    creates: /etc/apt/sources.list.d/crowdsec_crowdsec.list
+  tags: ["crowdsec", "packages"]
+
+- name: Install CrowdSec agent
+  ansible.builtin.apt:
+    name: crowdsec
+    state: present
+    update_cache: true
+  tags: ["crowdsec", "packages"]
+
+- name: Install firewall bouncer (iptables variant)
+  ansible.builtin.apt:
+    name: crowdsec-firewall-bouncer-iptables
+    state: present
+  tags: ["crowdsec", "packages"]
+
+- name: Install CrowdSec collections
+  ansible.builtin.command:
+    cmd: cscli collections install {{ item }}
+  loop: "{{ crowdsec_collections }}"
+  register: crowdsec_collections_result
+  changed_when: "'overwrite' not in crowdsec_collections_result.stdout"
+  notify: Reload CrowdSec
+  tags: ["crowdsec", "collections"]
+
+- name: Enroll in CrowdSec console
+  ansible.builtin.command:
+    cmd: cscli console enroll {{ crowdsec_enrollment_key }}
+  when: crowdsec_enrollment_key | length > 0
+  changed_when: true
+  tags: ["crowdsec", "console"]
+
+- name: Enable and start CrowdSec agent
+  ansible.builtin.systemd:
+    name: crowdsec
+    enabled: true
+    state: started
+  tags: ["crowdsec"]
+
+- name: Enable and start firewall bouncer
+  ansible.builtin.systemd:
+    name: crowdsec-firewall-bouncer
+    enabled: true
+    state: started
+  tags: ["crowdsec"]

@@ -1,0 +1,11 @@
+haproxy_sni_backends:
+  - name: headscale
+    sni: headscale.yourdomain.com
+    match: exact
+    backend_host: 127.0.0.1
+    backend_port: 8080
+  - name: cluster
+    sni: .yourdomain.com      # leading dot — suffix match catches *.yourdomain.com
+    match: suffix
+    backend_host: 10.10.0.0   # home gateway's WG address
+    backend_port: 443

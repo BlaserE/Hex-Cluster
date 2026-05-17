@@ -1,0 +1,7 @@
+---
+crowdsec_collections:
+  - crowdsecurity/linux       # SSH brute-force, base scenarios
+  - crowdsecurity/sshd        # SSH specific parsers
+  - crowdsecurity/haproxy     # HAProxy log parsing + scenarios
+
+crowdsec_enrollment_key: ""   # optional — set in host secrets to enroll in CrowdSec console

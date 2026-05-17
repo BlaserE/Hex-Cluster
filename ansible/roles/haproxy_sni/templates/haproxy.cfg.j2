@@ -1,0 +1,65 @@
+# {{ ansible_managed }}
+
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    maxconn 20000
+    user haproxy
+    group haproxy
+    daemon
+
+defaults
+    log     global
+    mode    tcp
+    option  tcplog
+    option  dontlognull
+    timeout connect 5s
+    timeout client  50s
+    timeout client-fin 50s
+    timeout server  50s
+    timeout tunnel  1h
+
+#--------------------------------------------------------------------
+# Frontend: TCP/SNI passthrough on :443
+# Peeks at the TLS ClientHello to read the SNI field,
+# then routes to the appropriate backend without decrypting.
+#--------------------------------------------------------------------
+frontend ft_sni
+    bind 0.0.0.0:{{ haproxy_sni_port }}
+    mode tcp
+    option tcplog
+
+    # Wait for enough data to read the ClientHello
+    tcp-request inspect-delay {{ haproxy_inspect_delay }}
+    tcp-request content accept if { req_ssl_hello_type 1 }
+
+    # ACLs — one per backend
+{% for backend in haproxy_sni_backends %}
+{% if backend.match == 'exact' %}
+    acl sni_{{ backend.name }} req_ssl_sni -i {{ backend.sni }}
+{% elif backend.match == 'suffix' %}
+    acl sni_{{ backend.name }} req_ssl_sni -m end {{ backend.sni }}
+{% endif %}
+{% endfor %}
+
+    # Routing — evaluated top to bottom, first match wins
+{% for backend in haproxy_sni_backends %}
+    use_backend bk_{{ backend.name }} if sni_{{ backend.name }}
+{% endfor %}
+
+    # No SNI match — drop the connection
+    default_backend bk_no_match
+
+#--------------------------------------------------------------------
+# Backends
+#--------------------------------------------------------------------
+{% for backend in haproxy_sni_backends %}
+backend bk_{{ backend.name }}
+    mode tcp
+    server {{ backend.name }} {{ backend.backend_host }}:{{ backend.backend_port }} check
+
+{% endfor %}
+backend bk_no_match
+    mode tcp
+    # Connections with no matching SNI go nowhere — tcp-request rejects them
+    tcp-request content reject
