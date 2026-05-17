@@ -5,3 +5,7 @@ crowdsec_collections:
   - crowdsecurity/haproxy     # HAProxy log parsing + scenarios
 
 crowdsec_enrollment_key: ""   # optional — set in host secrets to enroll in CrowdSec console
+
+
+# Because headscale already has 8080
+crowdsec_lapi_port: 8081

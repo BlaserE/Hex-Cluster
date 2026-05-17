@@ -4,12 +4,12 @@
 [Interface]
 Address    = {{ wg_vps_address }}
 ListenPort = {{ wg_listen_port }}
-PrivateKey = {{ vault_wg_vps_private_key }}
+PrivateKey = {{ wg_vps_private_key }}
 
 # Home gateway peer.
 # No Endpoint here — the home gateway initiates and the VPS learns
 # the source address from the first incoming handshake.
 # PersistentKeepalive lives on the home gateway side, not here.
 [Peer]
-PublicKey  = {{ vault_wg_home_public_key }}
-AllowedIPs = {{ vault_wg_home_address }}/32
+PublicKey  = {{ wg_cluster_gateway_public_key }}
+AllowedIPs = {{ wg_cluster_gateway_address }}/32

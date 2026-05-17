@@ -35,8 +35,8 @@ Thumbs.db
 ansible/.venv/
 ansible/.ansible/
 ansible/inventory/hosts.yml
+ansible/inventory/host_vars/gateway-1/vars.yml
 **/secrets.yml
-
 
 # --- Compressed Files ---
 **.tar.gz

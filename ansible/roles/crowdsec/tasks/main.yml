@@ -25,6 +25,22 @@
     state: present
   tags: ["crowdsec", "packages"]
 
+- name: Deploy CrowdSec config
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: /etc/crowdsec/config.yaml
+    owner: root
+    group: root
+    mode: "0640"
+  tags: ["crowdsec", "config"]
+
+- name: Update CrowdSec local API credentials URL
+  ansible.builtin.replace:
+    path: /etc/crowdsec/local_api_credentials.yaml
+    regexp: '127\.0\.0\.1:8080'
+    replace: '127.0.0.1:{{ crowdsec_lapi_port }}'
+  tags: ["crowdsec", "config"]
+
 - name: Install CrowdSec collections
   ansible.builtin.command:
     cmd: cscli collections install {{ item }}

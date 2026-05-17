@@ -2,7 +2,8 @@
 # roles/headscale/defaults/main.yml
 
 headscale_version: "0.28.0"
-headscale_domain: "headscale.example.com"
+headscale_domain: "headscale.yourdomain.com"
+headscale_base_domain: "ts.yourdomain.com"
 headscale_http_port: 8080
 headscale_derp_stun_port: 3478
 headscale_data_dir: /opt/headscale
