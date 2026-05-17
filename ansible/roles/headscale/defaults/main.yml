@@ -1,0 +1,16 @@
+---
+# roles/headscale/defaults/main.yml
+
+headscale_version: "0.28.0"
+headscale_domain: "headscale.example.com"
+headscale_http_port: 8080
+headscale_derp_stun_port: 3478
+headscale_data_dir: /opt/headscale
+
+# Tailscale address space — defaults are the standard ranges
+headscale_ip4_prefix: "100.64.0.0/10"
+headscale_ip6_prefix: "fd7a:115c:a1e0::/48"
+
+# DERP — keep Tailscale's public servers as fallback
+headscale_derp_urls:
+  - https://controlplane.tailscale.com/derpmap/default

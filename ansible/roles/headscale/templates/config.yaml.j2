@@ -1,0 +1,45 @@
+# {{ ansible_managed }}
+
+server_url: https://{{ headscale_domain }}
+listen_addr: 127.0.0.1:{{ headscale_http_port }}
+metrics_listen_addr: 127.0.0.1:9090
+grpc_listen_addr: 127.0.0.1:50443
+grpc_allow_insecure: false
+
+noise:
+  private_key_path: /var/lib/headscale/noise_private.key
+
+prefixes:
+  v4: {{ headscale_ip4_prefix }}
+  v6: {{ headscale_ip6_prefix }}
+  allocation: sequential
+
+derp:
+  server:
+    enabled: true
+    region_id: 999
+    region_code: "headscale"
+    region_name: "Headscale Embedded DERP"
+    verify_clients: true
+    stun_listen_addr: "0.0.0.0:{{ headscale_derp_stun_port }}"
+    private_key_path: /var/lib/headscale/derp_server_private.key
+    automatically_add_embedded_derp_region: true
+    ipv4: {{ ansible_host }}
+  urls:
+{% for url in headscale_derp_urls %}
+    - {{ url }}
+{% endfor %}
+  paths: []
+  auto_update_enabled: true
+  update_frequency: 3h
+
+database:
+  type: sqlite
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+    write_ahead_log: true
+
+ephemeral_node_inactivity_timeout: 30m
+
+tls_cert_path: ""
+tls_key_path: ""

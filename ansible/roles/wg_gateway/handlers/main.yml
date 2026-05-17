@@ -1,0 +1,7 @@
+---
+# roles/wireguard_gateway/handlers/main.yml
+
+- name: Restart WireGuard
+  ansible.builtin.systemd:
+    name: "wg-quick@{{ wg_interface }}"
+    state: restarted

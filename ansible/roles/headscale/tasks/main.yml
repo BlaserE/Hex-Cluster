@@ -1,0 +1,58 @@
+---
+# roles/headscale/tasks/main.yml
+
+- name: Create Headscale data directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+  loop:
+    - "{{ headscale_data_dir }}"
+    - "{{ headscale_data_dir }}/config"
+    - "{{ headscale_data_dir }}/lib"
+  tags: ["headscale"]
+
+- name: Deploy Headscale config
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: "{{ headscale_data_dir }}/config/config.yaml"
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Restart Headscale
+  tags: ["headscale", "config"]
+
+- name: Deploy docker-compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ headscale_data_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Restart Headscale
+  tags: ["headscale", "config"]
+
+- name: Start Headscale container
+  community.docker.docker_compose_v2:
+    project_src: "{{ headscale_data_dir }}"
+    state: present
+    pull: always
+  tags: ["headscale"]
+
+- name: Install headscale CLI wrapper
+  ansible.builtin.template:
+    src: headscale-cli.sh.j2
+    dest: /usr/local/bin/headscale
+    owner: root
+    group: root
+    mode: "0755"
+  tags: ["headscale", "cli"]
+
+- name: Allow DERP STUN through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ headscale_derp_stun_port }}"
+    proto: udp
+  tags: ["headscale", "firewall"]

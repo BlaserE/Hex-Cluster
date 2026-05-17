@@ -34,6 +34,8 @@ Thumbs.db
 .ansible
 ansible/.venv/
 ansible/.ansible/
+ansible/inventory/hosts.yml
+
 
 # --- Compressed Files ---
 **.tar.gz

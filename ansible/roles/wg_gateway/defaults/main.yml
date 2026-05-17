@@ -1,0 +1,7 @@
+---
+# roles/wg_gateway/defaults/main.yml
+
+wg_interface: wg0
+wg_listen_port: 51820
+wg_vps_address: 10.10.0.1/31
+wg_config_dir: /etc/wireguard

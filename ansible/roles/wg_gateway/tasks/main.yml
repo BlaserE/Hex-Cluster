@@ -1,0 +1,35 @@
+---
+# roles/wg_gateway/tasks/main.yml
+
+- name: Install WireGuard
+  ansible.builtin.apt:
+    name: wireguard
+    state: present
+    update_cache: true
+  tags: ["wireguard", "packages"]
+
+- name: Create WireGuard config directory
+  ansible.builtin.file:
+    path: "{{ wg_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  tags: ["wireguard"]
+
+- name: Deploy WireGuard interface config
+  ansible.builtin.template:
+    src: wg0.conf.j2
+    dest: "{{ wg_config_dir }}/{{ wg_interface }}.conf"
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Restart WireGuard
+  tags: ["wireguard", "config"]
+
+- name: Enable and start WireGuard interface
+  ansible.builtin.systemd:
+    name: "wg-quick@{{ wg_interface }}"
+    enabled: true
+    state: started
+  tags: ["wireguard"]
