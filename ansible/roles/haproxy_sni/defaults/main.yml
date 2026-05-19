@@ -1,7 +1,7 @@
 ---
 haproxy_package: haproxy
 haproxy_config_path: /etc/haproxy/haproxy.cfg
-haproxy_sni_port: 443
+haproxy_sni_port: 8443
 haproxy_inspect_delay: 5s
 
 # Defined per-host in host_vars:

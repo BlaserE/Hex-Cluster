@@ -1,0 +1,29 @@
+{
+  "groups": {
+    "group:admin": ["admin@"],
+    "group:friends": ["gaming@"]
+  },
+
+  "tagOwners": {
+    "tag:infra": ["group:admin"],
+    "tag:gaming-server": ["group:admin"]
+  },
+
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["group:admin"],
+      "dst": ["*:*"]
+    },
+    {
+      "action": "accept",
+      "src": ["group:friends"],
+      "dst": ["tag:gaming-server:*"]
+    },
+    {
+      "action": "accept",
+      "src": ["tag:infra"],
+      "dst": ["tag:infra:*"]
+    }
+  ]
+}

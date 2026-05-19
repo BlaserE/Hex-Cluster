@@ -1,7 +1,7 @@
 # {{ ansible_managed }}
 
 server_url: https://{{ headscale_domain }}
-listen_addr: 127.0.0.1:{{ headscale_http_port }}
+listen_addr: 0.0.0.0:{{ headscale_port }}
 metrics_listen_addr: 127.0.0.1:9090
 grpc_listen_addr: 127.0.0.1:50443
 grpc_allow_insecure: false
@@ -39,12 +39,17 @@ database:
     path: /var/lib/headscale/db.sqlite
     write_ahead_log: true
 
-ephemeral_node_inactivity_timeout: 30m
-
-tls_cert_path: ""
-tls_key_path: ""
-
 dns:
   override_local_dns: false
   magic_dns: false
   base_domain: {{ headscale_base_domain }}
+
+policy:
+  mode: file
+  path: /etc/headscale/acl.json
+
+ephemeral_node_inactivity_timeout: 30m
+
+tls_letsencrypt_hostname: {{ headscale_domain }}
+tls_letsencrypt_listen: ":http"
+tls_letsencrypt_cache_dir: /var/lib/headscale/cache

@@ -4,9 +4,8 @@
 headscale_version: "0.28.0"
 headscale_domain: "headscale.yourdomain.com"
 headscale_base_domain: "ts.yourdomain.com"
-headscale_http_port: 8080
+headscale_port: 443
 headscale_derp_stun_port: 3478
-headscale_data_dir: /opt/headscale
 
 # Tailscale address space — defaults are the standard ranges
 headscale_ip4_prefix: "100.64.0.0/10"

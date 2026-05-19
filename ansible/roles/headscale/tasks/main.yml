@@ -1,58 +1,61 @@
 ---
-# roles/headscale/tasks/main.yml
+- name: Download Headscale deb package
+  ansible.builtin.get_url:
+    url: "https://github.com/juanfont/headscale/releases/download/v{{ headscale_version }}/headscale_{{ headscale_version }}_linux_arm64.deb"
+    dest: "/tmp/headscale_{{ headscale_version }}.deb"
+    mode: "0644"
+  tags: ["headscale", "packages"]
 
-- name: Create Headscale data directories
-  ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "0750"
-  loop:
-    - "{{ headscale_data_dir }}"
-    - "{{ headscale_data_dir }}/config"
-    - "{{ headscale_data_dir }}/lib"
-  tags: ["headscale"]
+- name: Install Headscale deb package
+  ansible.builtin.apt:
+    deb: "/tmp/headscale_{{ headscale_version }}.deb"
+    state: present
+  tags: ["headscale", "packages"]
 
 - name: Deploy Headscale config
   ansible.builtin.template:
     src: config.yaml.j2
-    dest: "{{ headscale_data_dir }}/config/config.yaml"
-    owner: root
-    group: root
+    dest: /etc/headscale/config.yaml
+    owner: headscale
+    group: headscale
     mode: "0640"
   notify: Restart Headscale
   tags: ["headscale", "config"]
 
-- name: Deploy docker-compose file
+- name: Deploy Headscale ACL policy
   ansible.builtin.template:
-    src: docker-compose.yml.j2
-    dest: "{{ headscale_data_dir }}/docker-compose.yml"
-    owner: root
-    group: root
+    src: acl.json.j2
+    dest: /etc/headscale/acl.json
+    owner: headscale
+    group: headscale
     mode: "0640"
   notify: Restart Headscale
-  tags: ["headscale", "config"]
+  tags: ["headscale", "config", "acl"]
 
-- name: Start Headscale container
-  community.docker.docker_compose_v2:
-    project_src: "{{ headscale_data_dir }}"
-    state: present
-    pull: always
+- name: Enable and start Headscale
+  ansible.builtin.systemd:
+    name: headscale
+    enabled: true
+    state: started
   tags: ["headscale"]
-
-- name: Install headscale CLI wrapper
-  ansible.builtin.template:
-    src: headscale-cli.sh.j2
-    dest: /usr/local/bin/headscale
-    owner: root
-    group: root
-    mode: "0755"
-  tags: ["headscale", "cli"]
 
 - name: Allow DERP STUN through UFW
   community.general.ufw:
     rule: allow
     port: "{{ headscale_derp_stun_port }}"
     proto: udp
+  tags: ["headscale", "firewall"]
+
+- name: Allow Port 80 through UFW for ACME
+  community.general.ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+  tags: ["headscale", "firewall"]
+
+- name: Allow HTTPS through UFW for Headscale
+  community.general.ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
   tags: ["headscale", "firewall"]
